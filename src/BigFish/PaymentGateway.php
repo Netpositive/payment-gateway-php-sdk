@@ -261,6 +261,11 @@ XIm63iVw6gjP2qDnNwIDAQAB
 	protected static $config;
 
 	/**
+	 * @var bool
+	 */
+	protected static $debugCommunication = false;
+
+	/**
 	 * Set configuration
 	 * 
 	 * @param \BigFish\PaymentGateway\Config $config
@@ -294,6 +299,23 @@ XIm63iVw6gjP2qDnNwIDAQAB
 		}
 		throw new Exception('Payment Gateway configuration has not been set');
 	}
+
+    /**
+     * @return bool
+     */
+    public static function isDebugCommunication(): bool
+    {
+        return self::$debugCommunication;
+    }
+
+    /**
+     * @param bool $debugCommunication
+     */
+    public static function setDebugCommunication(bool $debugCommunication): void
+    {
+        self::$debugCommunication = $debugCommunication;
+    }
+
 
 	/**
 	 * Transaction initialization
@@ -725,6 +747,10 @@ XIm63iVw6gjP2qDnNwIDAQAB
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
 		curl_setopt($ch, CURLOPT_USERAGENT, self::getUserAgent($method));
 
+		if (self::isDebugCommunication()) {
+			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+		}
+
 		$httpResponse = curl_exec($ch);
 
 		if ($httpResponse === false) {
@@ -735,9 +761,17 @@ XIm63iVw6gjP2qDnNwIDAQAB
 			throw $e;
 		}
 
+		$curlRequestDump = [];
+		if (self::isDebugCommunication()) {
+			$curlRequestDump = [
+				'curl_getinfo' => curl_getinfo($ch),
+				'post_data' => $postData
+			];
+		}
+
 		curl_close($ch);
 
-		return new Response($httpResponse);
+		return new Response($httpResponse, $curlRequestDump);
 	}
 
 	/**
@@ -786,5 +820,4 @@ XIm63iVw6gjP2qDnNwIDAQAB
 
 		return 'localhost';
 	}
-
 }
