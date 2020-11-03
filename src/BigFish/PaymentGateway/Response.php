@@ -26,11 +26,13 @@ class Response
 	 * Construct new response object from JSON encoded object
 	 *
 	 * @param string $json JSON encoded object
+	 * @param array $curlRequestDump
+	 *
 	 * @throws \BigFish\PaymentGateway\Exception
 	 * @return void
 	 * @access public
 	 */
-	public function __construct($json, $curlRequestDump)
+	public function __construct($json, $curlRequestDump = [])
 	{
 		if (is_object($json)) {
 			$object = $json;
